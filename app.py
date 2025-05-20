@@ -3,7 +3,7 @@ import anthropic
 from datetime import datetime
 
 # Constants
-CLAUDE_API_MODEL = "claude-3-7-sonnet-20250219"  # 最新モデルに更新可能
+CLAUDE_API_MODEL = "claude-3-7-sonnet-20250219"  # 最新モデルに更新
 
 # アプリのタイトルと説明
 st.set_page_config(page_title="SEO記事ジェネレーター", layout="wide")
@@ -25,7 +25,10 @@ if 'generated_articles' not in st.session_state:
 # Claude APIを呼び出す関数
 def generate_article_with_claude(prompt, api_key):
     try:
-        client = anthropic.Anthropic(api_key=api_key)
+        # 最新のAnthropicクライアント初期化方法
+        client = anthropic.Client(api_key=api_key)
+        
+        # 最新の形式でメッセージを作成
         message = client.messages.create(
             model=CLAUDE_API_MODEL,
             max_tokens=4000,
@@ -38,30 +41,14 @@ def generate_article_with_claude(prompt, api_key):
         
         # APIレスポンスから内容を抽出
         if hasattr(message, 'content'):
-            if isinstance(message.content, list):
-                # 新しいバージョンではコンテンツがリストとして返される
-                content_text = ""
-                for block in message.content:
-                    if hasattr(block, 'text'):
-                        content_text += block.text
-                    elif isinstance(block, dict) and 'text' in block:
-                        content_text += block['text']
-                return content_text
-            elif isinstance(message.content, str):
-                # contentが直接文字列の場合
-                return message.content
-            else:
-                # 文字列表現のあるオブジェクトの場合
-                return str(message.content)
+            content_text = ""
+            for content_block in message.content:
+                if content_block.type == "text":
+                    content_text += content_block.text
+            return content_text
         else:
-            # その他のAPIレスポンス構造へのフォールバック
-            if hasattr(message, 'completion'):
-                return message.completion
-            elif hasattr(message, 'text'):
-                return message.text
-            else:
-                st.warning("APIレスポンスの形式が予期しないものでした。開発者に連絡してください。")
-                return str(message)
+            st.warning("APIレスポンスの形式が予期しないものでした。開発者に連絡してください。")
+            return str(message)
                 
     except Exception as e:
         st.error(f"エラーが発生しました: {str(e)}")
