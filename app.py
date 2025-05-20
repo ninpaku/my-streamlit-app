@@ -3,7 +3,7 @@ import anthropic
 from datetime import datetime
 
 # Constants
-CLAUDE_API_MODEL = "claude-3-opus-20240229"  # 最新モデルに更新可能
+CLAUDE_API_MODEL = "claude-3-7-sonnet-20250219"  # 最新モデルに更新可能
 
 # アプリのタイトルと説明
 st.set_page_config(page_title="SEO記事ジェネレーター", layout="wide")
